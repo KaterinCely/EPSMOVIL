@@ -10,7 +10,7 @@ export default function CustomButton({ title, onPress, style }) {
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: "rgb(129, 107, 131)", 
+        backgroundColor: "#DDA0DD",
         padding: 12,
         borderRadius: 15,
         alignItems: "center",
@@ -20,5 +20,6 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontWeight: "bold",
         fontSize: 16,
+        margin: 1,
     }
 });

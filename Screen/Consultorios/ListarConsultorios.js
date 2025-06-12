@@ -1,21 +1,18 @@
 import React from "react";
-import { View, Text, Button } from "react-native"
-
+import { View, Text} from "react-native"
+import BottonComponent from "../../components/BottonComponent"
 
 export default function ListarConsultoriosScreen({ navigation }) {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text>Aquí van a listar los Consultorios</Text>
 
-      <Button
-        title="Ver detalle"
-        onPress={() => navigation.navigate("DetalleConsultorios")}>
-      </Button>
+      <BottonComponent title="Ver detalle"
+        onPress={() => navigation.navigate("DetalleConsultorios")} />
 
-      <Button
-        title="Nueva cita"
-        onPress={() => navigation.navigate("EditarConsultorios")}>
-      </Button>
+      <BottonComponent title="Nueva  especialidad"
+        onPress={() => navigation.navigate("EditarConsultorios")} />
+
     </View>
   );
 }

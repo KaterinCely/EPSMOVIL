@@ -1,21 +1,18 @@
 import React from "react";
-import { View, Text, Button } from "react-native"
+import { View, Text } from "react-native"
+import BottonComponent from "../../components/BottonComponent";
 
-
-export default function ListarCitasScreen({navigation}) {
+export default function ListarCitasScreen({ navigation }) {
   return (
-    <View style={{flex:1, justifyContent:"center", alignItems:"center"}}> 
-        <Text>Aquí se va a listar las citas</Text>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Aquí se va a listar las citas</Text>
 
-        <Button
-          title="Ver detalle" 
-          onPress={()=> navigation.navigate("DetalleCitas")}>
-        </Button>
-      
-        <Button
-          title="Nueva cita" 
-          onPress={()=> navigation.navigate("EditarCitas")}>
-        </Button>
+      <BottonComponent title="Ver detalle"
+        onPress={() => navigation.navigate("DetalleCitas")} />
+
+      <BottonComponent title="Nueva cita"
+        onPress={() => navigation.navigate("EditarCitas")} />
+        
     </View>
   );
 }

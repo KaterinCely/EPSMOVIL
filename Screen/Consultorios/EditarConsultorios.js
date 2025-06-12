@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import BottonComponent from "../../components/BottonComponent";
 import {ScrollView,View,Text,TextInput,StyleSheet,Alert,KeyboardAvoidingView,Platform,} from "react-native";
 
-export default function EditarConsultorioScreen({ route, navigation }) {
+export default function EditarConsultorioScreen({ route, }) {
   // Recibe los datos iniciales desde route.params para editar
   const {
     numero: numeroInicial = "",

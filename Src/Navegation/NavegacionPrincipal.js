@@ -1,3 +1,4 @@
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import InicioStacks from "./stacks/InicioStacks";
@@ -12,19 +13,17 @@ import PagosStack from "./stacks/PagosStacks";
 import PasientesStack from "./stacks/PasientesStacks";
 import { createStackNavigator } from "@react-navigation/stack";
 
-
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-
-  function NavegacionNav() {
+function NavegacionNav() {
     return (
         <Tab.Navigator
             screenOptions={{
-                tabBarActiveTintColor: "#1976D2",
+                tabBarActiveTintColor: "#DDA0DD", 
                 tabBarInactiveTintColor: "#757575",
                 tabBarStyle: { backgroundColor: "#fff" },
-            }}Ñ
+            }}
         >
             <Tab.Screen
                 name="Inicio"
@@ -55,7 +54,6 @@ const Stack = createStackNavigator();
             />
         </Tab.Navigator>
     );
-
 }
 
 export default function NavegacionPrincipal() {
