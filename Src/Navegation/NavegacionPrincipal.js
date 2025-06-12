@@ -1,68 +1,74 @@
-import CitasStacks from './stacks/CitasStacks';
-import ConsultoriosStacks from './stacks/ConsultorioStacks';
-import PacientesStacks from './stacks/PasientesStacks';
-import MedicosStacks from './stacks/MedicosStacks';
-import HorarioMedicoStacks from './stacks/HorarioMedicoStacks';
-import PagosStacks from './stacks/PagosStacks';
-import EspecialidadesStacks from './stacks/EspecialidadesStacks';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { AntDesign, FontAwesome5, FontAwesome6, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
+import InicioStacks from "./stacks/InicioStacks";
+import PerfilStacks from "./stacks/PerfilStacks";
+import ConficStacks from "./stacks/ConficStacks";
+import CitasStack from "./stacks/CitasStacks";
+import ConsultoriosStack from "./stacks/ConsultorioStacks";
+import EspecialidadesStack from "./stacks/EspecialidadesStacks";
+import HorarioMedicoStack from "./stacks/HorarioMedicoStacks";
+import MedicoStack from "./stacks/MedicosStacks";
+import PagosStack from "./stacks/PagosStacks";
+import PasientesStack from "./stacks/PasientesStacks";
+import { createStackNavigator } from "@react-navigation/stack";
+
 
 const Tab = createBottomTabNavigator();
-export default function NavegacionPrincipal() {
+const Stack = createStackNavigator();
+
+
+  function NavegacionNav() {
     return (
         <Tab.Navigator
             screenOptions={{
                 tabBarActiveTintColor: "#1976D2",
                 tabBarInactiveTintColor: "#757575",
-                tabBarStyle: { backgroundColor: "#fff" }
-            }}>
-
-
-            <Tab.Screen name='Citas' component={CitasStacks}
+                tabBarStyle: { backgroundColor: "#fff" },
+            }}Ñ
+        >
+            <Tab.Screen
+                name="Inicio"
+                component={InicioStacks}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <FontAwesome6 name="hospital-user" size={24} color="black" />
-                    ),
-                }}></Tab.Screen>
-            <Tab.Screen name='Consultorios' component={ConsultoriosStacks}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <FontAwesome5 name="hospital-alt" size={24} color="black" />
+                        <Ionicons name="home" size={size} color={color} />
                     ),
                 }}
-            ></Tab.Screen>
-            <Tab.Screen name='Pasientes' component={PacientesStacks}
+            />
+            <Tab.Screen
+                name="Perfil"
+                component={PerfilStacks}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <FontAwesome6 name="person" size={24} color="black" />
+                        <AntDesign name="user" size={size} color={color} />
                     ),
-                }}></Tab.Screen>
-            <Tab.Screen name='Medicos' component={MedicosStacks}
+                }}
+            />
+            <Tab.Screen
+                name="Configuración"
+                component={ConficStacks}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <Fontisto name="doctor" size={24} color="black" />
+                        <Ionicons name="settings" size={size} color={color} />
                     ),
-                }}></Tab.Screen>
-            <Tab.Screen name='Horarios Medicos' component={HorarioMedicoStacks}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <AntDesign name="clockcircle" size={24} color="black" />
-                    ),
-                }}></Tab.Screen>
-            <Tab.Screen name='Pagos' component={PagosStacks}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="cash-outline" size={24} color="black" />
-                    ),
-                }}></Tab.Screen>
-            <Tab.Screen name='Especialidades' component={EspecialidadesStacks}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialIcons name="medication" size={24} color="black" />
-                    ),
-                }}></Tab.Screen>
+                }}
+            />
         </Tab.Navigator>
     );
+
 }
 
+export default function NavegacionPrincipal() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: true }}>
+            <Stack.Screen name="NavegacionNav" component={NavegacionNav} />
+            <Stack.Screen name="CitasStack" component={CitasStack} />
+            <Stack.Screen name="ConsultoriosStack" component={ConsultoriosStack} />
+            <Stack.Screen name="EspecialidadesStack" component={EspecialidadesStack} />
+            <Stack.Screen name="HorarioMedicoStack" component={HorarioMedicoStack} />
+            <Stack.Screen name="MedicoStack" component={MedicoStack} />
+            <Stack.Screen name="PagosStack" component={PagosStack} />
+            <Stack.Screen name="PasientesStack" component={PasientesStack} />
+        </Stack.Navigator>
+    );
+}
