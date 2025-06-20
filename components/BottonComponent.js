@@ -10,16 +10,21 @@ export default function CustomButton({ title, onPress, style }) {
 
 const styles = StyleSheet.create({
     button: {
-        backgroundColor: "#DDA0DD",
-        padding: 12,
-        borderRadius: 15,
-        alignItems: "center",
-        marginVertical: 10,
+        backgroundColor: '#DDA0DD',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 3, 
+        shadowColor: '#000', 
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        margin : 5,
     },
     text: {
-        color: "#fff",
-        fontWeight: "bold",
+        color: '#FFFFFF', 
         fontSize: 16,
-        margin: 1,
-    }
+        fontWeight: 'bold',
+    },
 });
