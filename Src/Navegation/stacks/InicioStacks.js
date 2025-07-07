@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons, MaterialIcons, AntDesign, FontAwesome6, FontAwesome5, Fontisto } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-export default function InicioScreen() {
+export default function InicioStacks() {
     const navigation = useNavigation();
 
     return (

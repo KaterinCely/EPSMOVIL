@@ -1,22 +1,37 @@
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { useState } from "react";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import React , { useState } from "react";
 import BottonComponent from "../../components/BottonComponent";
+import {registroUser} from "../../Src/Services/AuthServices";
+
+
 
 export default function RegistroScreen({ navigation }) {
-    // State variables for form inputs
     const [name, setName] = useState("");
     const [role, setRole] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    // Function to handle form submission
-    const handleRegister = () => {
-        console.log({ name, role, email, password });
+    const handleRegister = async () => {
+        if (!name || !email || !password || !role) {
+            return Alert.alert("Error", "Todos los campos son obligatorios");
+        }
+
+
+        const result = await registroUser(name, email, password, role);
+ 
+
+        if (result.success) {
+            Alert.alert("Éxito", "Registro exitoso", [
+                { text: "OK", onPress: () => navigation.navigate("InicioStacks") },
+            ]);
+        } else {
+            Alert.alert("Error", result.message || "No se pudo registrar");
+        }
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Pantalla Registro</Text>
+            <Text style={styles.title}> Registro</Text>
 
             <TextInput
                 style={styles.input}
@@ -57,7 +72,6 @@ export default function RegistroScreen({ navigation }) {
         </View>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {

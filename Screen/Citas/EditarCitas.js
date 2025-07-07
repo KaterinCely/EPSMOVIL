@@ -1,176 +1,205 @@
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from "react-native"
 import React, { useState } from "react";
-import { ScrollView, View, Text, TextInput, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
-import BottonComponent from "../../components/BottonComponent";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { crearCitas, editarCitas } from "../../Src/Services/CitasService";
 
 export default function EditarCitasScreen() {
-  const [fecha, setFecha] = useState();
-  const [hora, setHora] = useState();
-  const [estado, setEstado] = useState();
-  const [motivo, setMotivo] = useState();
-  const [observacion, setObservacion] = useState();
-  const [tipoConsulta, setTipoConsulta] = useState();
-  const fechaRegex = /^\d{4}\/\d{2}\/\d{2}$/;
-  const horaRegex = /^\d{2}:\d{2}$/;
+  const navigation = useNavigation();
+  const route = useRoute();
 
-  const handleSubmit = () => {
-    if (!fechaRegex.test(fecha)) {
-      Alert.alert("Formato incorrecto", "Fecha debe tener formato YYYY/MM/DD con barras.");
+  const citas = route.params?.citas;
+
+  const [idPasientes, setIdPasientes] = useState(citas?.idPasientes || "");
+  const [idMedicos, setIdMedicos] = useState(citas?.idMedicos || "");
+  const [idConsultorios, setIdConsultorios] = useState(citas?.idConsultorios?.toString() || "");
+  const [fecha, setfecha] = useState(citas?.fecha?.toString() || "");
+  const [hora, setHora] = useState(citas?.hora?.toString() || "");
+  const [estado, setEstado] = useState(citas?.estado?.toString() || "");
+  const [motivo, setMotivo] = useState(citas?.motivo?.toString() || "");
+  const [observacion, setObservacion] = useState(citas?.observacion?.toString() || "");
+  const [tipo_consulta, setTipo_consulta] = useState(citas?.tipo_consulta?.toString() || "");
+  const [loading, setLoading] = useState(false);
+
+  const esEdicion = !!citas;
+
+
+  const handleGuardar = async () => {
+    if (!idPasientes || !idMedicos || !idConsultorios || !fecha || !hora || !estado || !motivo || !observacion || !tipo_consulta) {
+      Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
-
-    if (!horaRegex.test(hora)) {
-      Alert.alert("Formato incorrecto", "Hora debe tener formato HH:MM con dos puntos.");
-      return;
+    setLoading(true);
+    try {
+      let result;
+      if (esEdicion) {
+        result = await editarCitas(citas.id, { idMedicos, idPasientes, idConsultorios, fecha, hora, estadomotivo, observacion, tipo_consulta });
+      } else {
+        result = await crearCitas({ idMedicos, idPasientes, idConsultorios, fecha, hora, estado, motivo, observacion, tipo_consulta });
+      }
+      if (result.success) {
+        Alert.alert("Éxito", esEdicion ? "Cita actualizada" : "Cita creada");
+        navigation.goBack();
+      } else {
+        Alert.alert("Error", result.message || "Error al guardar la cita");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Error al guardar la cita");
+    } finally {
+      setLoading(false);
     }
-
-    if (!fecha || !hora || !estado || !motivo || !observacion || !tipoConsulta) {
-      Alert.alert("Error", "Por favor complete todos los campos.");
-      return;
-    }
-
-    Alert.alert(
-      "Datos editados",
-      `Fecha: ${fecha}\nHora: ${hora}\nEstado: ${estado}\nMotivo: ${motivo}\nObservación: ${observacion}\nTipo de consulta: ${tipoConsulta}`
-    );
-  };
+  }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Editar Detalles de la Cita</Text>
+    <View style={styles.container}>
+      <Text style={styles.titulo}>{esEdicion ? "Editar Cita" : "Crear Cita"}</Text>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Fecha</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY/MM/DD"
-              keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "default"}
-              value={fecha}
-              onChangeText={setFecha}
-              maxLength={10}
-              accessibilityLabel="Campo fecha"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>id Medicos</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="AD del la cita"
+          keyboardType="numeric"
+          value={idMedicos}
+          onChangeText={setIdMedicos}
+          maxLength={10}
+          accessibilityLabel="Campo fecha"
+        />
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>id Pasientes</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="ID del la Pasientes"
+          keyboardType="numeric"
+          value={idPasientes}
+          onChangeText={setIdPasientes}
+          maxLength={10}
+          accessibilityLabel="Campo fecha"
+        />
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>id Consultorios</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="ID del Consultorios"
+          keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "default"}
+          value={idConsultorios}
+          onChangeText={setIdConsultorios}
+          maxLength={10}
+          accessibilityLabel="Campo fecha"
+        />
+      </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Hora</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="HH:MM"
-              keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "default"}
-              value={hora}
-              onChangeText={setHora}
-              maxLength={5}
-              accessibilityLabel="Campo hora"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Fecha</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="YYYY/MM/DD"
+          keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "default"}
+          value={fecha}
+          onChangeText={setfecha}
+          maxLength={10}
+          accessibilityLabel="Campo fecha"
+        />
+      </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Estado</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Estado de su cita"
-              value={estado}
-              onChangeText={setEstado}
-              accessibilityLabel="Campo estado"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Hora</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="HH:MM"
+          keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "default"}
+          value={hora}
+          onChangeText={setHora}
+          maxLength={5}
+          accessibilityLabel="Campo hora"
+        />
+      </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Motivo</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Motivo de la cita"
-              value={motivo}
-              onChangeText={setMotivo}
-              accessibilityLabel="Campo motivo"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Estado</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Estado de su cita"
+          value={estado}
+          onChangeText={setEstado}
+          accessibilityLabel="Campo estado"
+        />
+      </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Observación</Text>
-            <TextInput
-              style={[styles.input, styles.multilineInput]}
-              placeholder="Observaciones adicionales"
-              value={observacion}
-              onChangeText={setObservacion}
-              multiline
-              numberOfLines={4}
-              accessibilityLabel="Campo observación"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Motivo</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Motivo de la cita"
+          value={motivo}
+          onChangeText={setMotivo}
+          accessibilityLabel="Campo motivo"
+        />
+      </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Tipo de Consulta</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Tipo de su consulta"
-              value={tipoConsulta}
-              onChangeText={setTipoConsulta}
-              accessibilityLabel="Campo tipo de consulta"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Observación</Text>
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          placeholder="Observaciones adicionales"
+          value={observacion}
+          onChangeText={setObservacion}
+          multiline
+          numberOfLines={4}
+          accessibilityLabel="Campo observación"
+        />
+      </View>
 
-          <BottonComponent title="Guardar Cambios" onPress={handleSubmit} />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <View style={styles.field}>
+        <Text style={styles.label}>Tipo de Consulta</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Tipo de su consulta"
+          value={tipo_consulta}
+          onChangeText={setTipo_consulta}
+          accessibilityLabel="Campo tipo de consulta"
+        />
+      </View>
+
+      <TouchableOpacity
+        style={Styles.boton} onPress={handleGuardar} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={Styles.botonTexto}>{esEdicion ? "Actualizar" : "Crear"}</Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#ffffff",
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  card: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    padding: 24,
-    width: "100%",
-    maxWidth: 480,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  field: {
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
   input: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
+    height: 40,
+    borderColor: "#ccc",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: "top",
+  boton: {
+    backgroundColor: "#007BFF",
+    paddingVertical: 10,
+    borderRadius: 5,
+  },
+  botonTexto: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
   },
 });
