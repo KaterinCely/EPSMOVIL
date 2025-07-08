@@ -17,7 +17,7 @@ export default function CitasStack() {
                 options={{ title: "Citas" }} 
             />
             <Stack.Screen 
-                name="EditarCitas" 
+                name="editarCitas" 
                 component={EditarCitas} 
                 options={{ title: "Nuevo/Editar Citas" }} 
             />

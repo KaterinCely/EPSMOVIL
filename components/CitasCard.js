@@ -9,9 +9,12 @@ export default function CitasCard({ cita, onEdit, onDelete }) {
         <View style={style.card}>
             <View style={style.info}>
                 <TouchableOpacity onPress={() => setShowDetails(!showDetails)}>
-                    <Text style={style.nombre}>Motivo de la cita {cita.motivo}</Text>
+                    <Text style={style.nombre}>Paciente: {cita.pasiente?.nombre}</Text>
+                    {/* <Text style={style.nombre}>Motivo de la cita {cita.motivo}</Text> */}
+
                     {showDetails && (
                         <>
+                            {/* <Text style={style.detalle}>Motivo de la cita {cita.motivo}</Text> */}
                             <Text style={style.detalle}>Observacion: {cita.observacion}</Text>
                             <Text style={style.detalle}>Tipo de la Consulta : {cita.tipo_consulta}</Text>
                             <Text style={style.detalle}> Estado: {cita.estado}</Text>

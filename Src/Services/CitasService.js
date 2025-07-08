@@ -14,7 +14,7 @@ export const listarCitas = async () => {
     }
 }
 
-export const eliminarActividad = async (id) => {
+export const eliminarCitas = async (id) => {
 
     try {
         await api.delete(`/eliminarCitas/${id}`);
@@ -43,12 +43,13 @@ export const crearCitas = async (data) => {
 }
 
 export const editarCitas = async (id, data) => {
-
+   console.log("Datos a editar:", data);
     try {
         const response = await api.put(`/editarCitas/${id}`, data);
+       
         return { success: true, data: response.data };
     } catch (error) {
-        console.error("Error al editar ciatas:", error.response ? error.response.data : error.message);
+        console.error("Error al editar citas:", error.response ? error.response.data : error.message);
         return {
             success: false,
             message: error.response ? error.response.data : "Error de conexion",

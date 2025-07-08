@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Alert, ActivityIndicator, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { listarCitas, eliminarCita } from "../../Src/Services/CitasService";
+import { listarCitas, eliminarCitas, } from "../../Src/Services/CitasService";
 import CitaCard from "../../components/CitasCard"; // Deberás crear este componente como hiciste con ActividadCard
 
 export default function ListarCitasScreen() {
@@ -41,7 +41,7 @@ export default function ListarCitasScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const result = await eliminarCita(id);
+              const result = await eliminarCitas(id);
               if (result.success) {
                 handleCargarCitas();
               } else {
@@ -57,11 +57,11 @@ export default function ListarCitasScreen() {
   };
 
   const handleEditar = (cita) => {
-    navigation.navigate("EditarCita", { cita });
+    navigation.navigate("editarCitas", { cita });
   };
 
   const handleCrear = () => {
-    navigation.navigate("EditarCita");
+    navigation.navigate("editarCitas");
   };
 
   if (loading) {
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: "#1976D2",
+    backgroundColor: "#DDA0DD",
     padding: 15,
     borderRadius: 50,
     elevation: 5,
@@ -121,3 +121,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+
+
+
