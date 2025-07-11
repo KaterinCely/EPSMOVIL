@@ -1,58 +1,95 @@
-import React, { useState, useEffect } from "react";
-import BottonComponent from "../../components/BottonComponent";
-import { ScrollView, View, Text, TextInput, StyleSheet, Alert, KeyboardAvoidingView, Platform, } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView, } from "react-native"
+import React, { useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { crearEspecialidad, editarEspecialidad } from "../../Src/Services/EspecialidadesService";
 
 export default function EditarEspecialidadScreen() {
-  const [nombre, setNombre] = useState();
-  const [descripcion, setDescripcion] = useState();
+  const navigation = useNavigation();
+  const route = useRoute();
 
-  const handleSubmit = () => {
-    if (!nombre || !descripcion) {
-      Alert.alert("Error", "Por favor complete todos los campos.");
+  const especialidades = route.params?.especialidades;
+
+  const [nombre, setNombre] = useState(especialidades?.nombre || "");
+  const [descripcion, setDescripcion] = useState(especialidades?.descripcion?.toString() || "");
+  const [loading, setLoading] = useState(false);
+
+  const esEdicion = !!especialidades;
+
+  const handleGuardar = async () => {
+    if ( !nombre || !descripcion ) {
+      Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
+    setLoading(true);
+    try {
+      let result;
 
-    Alert.alert(
-      "Datos actualizados",
-      `Nombre: ${nombre}\nDescripción: ${descripcion}`
-    );
-  };
+      if (esEdicion) {
+        result = await editarEspecialidad(especialidades.id, {
+          nombre,
+          descripcion,
+        });
+      } else {
+        result = await crearEspecialidad({ nombre, descripcion });
+      }
+
+      if (result.success) {
+        Alert.alert("Éxito", esEdicion ? "Especialidad actualizada" : "Especialidad creada");
+        navigation.goBack();
+      } else {
+        Alert.alert("Error", result.message || "Error al guardar la Especialidad");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Error al guardar la Especialidad");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
+      style={styles.keyboardContainer}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Editar Detalles de Especialidad</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.titulo}>Nuevo Especialidad </Text>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre de la especialidad"
-              value={nombre}
-              onChangeText={setNombre}
-              accessibilityLabel="Campo nombre"
-            />
-          </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Nombre de la Especialidad</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre de la Especialidad"
+            value={nombre}
+            onChangeText={setNombre}
+          />
+        </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Descripción</Text>
-            <TextInput
-              style={[styles.input, styles.multilineInput]}
-              placeholder="Descripción de la especialidad"
-              value={descripcion}
-              onChangeText={setDescripcion}
-              multiline
-              numberOfLines={4}
-              accessibilityLabel="Campo descripción"
-            />
-          </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Descripciocion de la Especialidad</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Descripción del Consultorio"
+            value={descripcion}
+            onChangeText={setDescripcion}
+          />
+        </View>
 
-          <BottonComponent title="Guardar Cambios" onPress={handleSubmit} />
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleGuardar}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>Guardar Especialidad</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -60,54 +97,50 @@ export default function EditarEspecialidadScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#ffffff",
+    padding: 20,
+    paddingBottom: 40,
   },
-  card: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    padding: 24,
-    width: "100%",
-    maxWidth: 480,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  field: {
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  inputContainer: {
+    marginBottom: 15,
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
+    marginBottom: 5,
+    color: "#555",
   },
   input: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f8f8",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
   },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: "top",
+
+  buttonContainer: {
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: "#DDA0DD",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
-

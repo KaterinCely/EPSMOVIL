@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import ListarConsultorios from '../../../Screen/Consultorios/ListarConsultorios';
+import listarConsultorios from '../../../Screen/Consultorios/ListarConsultorios';
 import EditarConsultorios from '../../../Screen/Consultorios/EditarConsultorios';
 import DetalleConsultorios from '../../../Screen/Consultorios/DetallesConsultorio';
 
@@ -10,17 +10,17 @@ export default function ConsultoriosStack() {
     return (
         <Stack.Navigator>
             <Stack.Screen 
-                name='ListarConsultorios' 
-                component={ListarConsultorios} 
+                name='listarConsultorios' 
+                component={listarConsultorios} 
                 options={{ title: "Consultorios" }} 
             />
             <Stack.Screen 
-                name='EditarConsultorios' 
+                name='editarConsultorios' 
                 component={EditarConsultorios} 
                 options={{ title: "Nuevo/Editar Consultorios" }} 
             />
             <Stack.Screen 
-                name='DetalleConsultorios'  
+                name='detalleConsultorios'  
                 component={DetalleConsultorios} 
                 options={{ title: "Detalles Consultorios" }} 
             />

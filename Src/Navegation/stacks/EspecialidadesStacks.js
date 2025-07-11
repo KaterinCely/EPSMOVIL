@@ -10,17 +10,17 @@ export default function EspecialidadesStack() {
     return (
         <Stack.Navigator>
             <Stack.Screen 
-                name='ListarEspecialidades' 
+                name='listarEspecialidad' 
                 component={ListarEspecialidades} 
                 options={{ title: "Especializaciones" }}
             />
             <Stack.Screen 
-                name='EditarEspecialidades' 
+                name='editarEspecialidad' 
                 component={EditarEspecialidades} 
                 options={{ title: "Nuevo/Editar Especializaciones" }} 
             />
             <Stack.Screen 
-                name='DetallesEspecialidades'  
+                name='detallesEspecialidades'  
                 component={DetallesEspecialidades} 
                 options={{ title: "Detalles Especializaciones" }} 
             />
