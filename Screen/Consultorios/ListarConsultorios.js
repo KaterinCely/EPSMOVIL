@@ -1,35 +1,39 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Alert, ActivityIndicator, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { listarConsultorios, eliminarConsultorios, } from "../../Src/Services/ConsultorioService";
-import ConsultorioCard from "../../components/ConsultorioCard"; // Deberás crear este componente como hiciste con ActividadCard
+import React, { useEffect, useState } from "react"; 
+import { View, Text, Alert, ActivityIndicator, FlatList, StyleSheet, TouchableOpacity } from "react-native";  
+import { useNavigation } from "@react-navigation/native";  
+import { listarConsultorios, eliminarConsultorios } from "../../Src/Services/ConsultorioService";  
+import ConsultorioCard from "../../components/ConsultorioCard";  
 
+// Componente principal ListarConsultoriosScreen
 export default function ListarConsultoriosScreen() {
-  const [consultorio, setConsultorio] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigation = useNavigation();
+  const [consultorio, setConsultorio] = useState([]);  // Estado para almacenar los consultorios
+  const [loading, setLoading] = useState(true);  // Estado para controlar el loading
+  const navigation = useNavigation();  // Hook para la navegación
 
+  // Función para cargar los consultorios
   const handleCargarConsultorio = async () => {
-    setLoading(true);
+    setLoading(true);  // Activa el loading
     try {
-      const result = await listarConsultorios();
+      const result = await listarConsultorios(); 
       if (result.success) {
-        setConsultorio(result.data);
+        setConsultorio(result.data);  // Actualiza el estado con los consultorios obtenidos
       } else {
-        Alert.alert("Error", result.message || "No se pudieron cargar las consultorios");
+        Alert.alert("Error", result.message || "No se pudieron cargar los consultorios");
       }
     } catch (error) {
-      Alert.alert("Error", "No se pudieron cargar las consultorios");
+      Alert.alert("Error", "No se pudieron cargar los consultorios");
     } finally {
-      setLoading(false);
+      setLoading(false);  // Desactiva el loading
     }
   };
 
+  // Efecto para cargar consultorios al enfocar la pantalla
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", handleCargarConsultorio);
-    return unsubscribe;
+    return unsubscribe;  // Limpia el listener al desmontar el componente
   }, [navigation]);
 
+  // Función para manejar la eliminación de un consultorio
   const handleEliminar = (id) => {
     Alert.alert(
       "Eliminar consultorio",
@@ -41,10 +45,9 @@ export default function ListarConsultoriosScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const result = await eliminarConsultorios(id);
-              
+              const result = await eliminarConsultorios(id);  // Llama al servicio para eliminar el consultorio
               if (result.success) {
-                handleCargarConsultorio();
+                handleCargarConsultorio();  // Recarga los consultorios después de eliminar
               } else {
                 Alert.alert("Error", result.message || "No se pudo eliminar el consultorio");
               }
@@ -57,14 +60,17 @@ export default function ListarConsultoriosScreen() {
     );
   };
 
+  // Función para manejar la edición de un consultorio
   const handleEditar = (consultorio) => {
-    navigation.navigate("editarConsultorios", { consultorio });
+    navigation.navigate("editarConsultorios", { consultorio });  // Navega a la pantalla de edición
   };
 
+  // Función para manejar la creación de un nuevo consultorio
   const handleCrear = () => {
-    navigation.navigate("editarConsultorios");
+    navigation.navigate("editarConsultorios");  // Navega a la pantalla de creación
   };
 
+  // Muestra un indicador de carga mientras se obtienen los consultorios
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -73,19 +79,21 @@ export default function ListarConsultoriosScreen() {
     );
   }
 
+  // Renderiza la lista de consultorios
   return (
     <View style={{ flex: 1 }}>
       <FlatList
-        data={consultorio}
-        keyExtractor={(item) => item.id.toString()}
+        data={consultorio}  // Datos de los consultorios
+        keyExtractor={(item) => item.id.toString()}  // Clave única para cada elemento
         renderItem={({ item }) => (
           <ConsultorioCard
-            consultorio={item}
-            onEdit={() => handleEditar(item)}
-            onDelete={() => handleEliminar(item.id)}
+            consultorio={item}  // Pasa el consultorio al componente ConsultorioCard
+            onEdit={() => handleEditar(item)}  // Maneja la edición
+            onDelete={() => handleEliminar(item.id)}  // Maneja la eliminación
           />
         )}
-        ListEmptyComponent={<Text style={styles.empty}>No hay consultorio registrado</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>No hay consultorios registrados</Text>}  // Mensaje si no hay consultorios
+        contentContainerStyle={{ paddingBottom: 100 }}  // Espacio adicional para el botón
       />
       <TouchableOpacity style={styles.boton} onPress={handleCrear}>
         <Text style={styles.botonTexto}>Crear consultorio</Text>
@@ -94,6 +102,7 @@ export default function ListarConsultoriosScreen() {
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
   centered: {
     flex: 1,
@@ -122,7 +131,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-
-
-

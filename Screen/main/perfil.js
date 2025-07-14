@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";  
 import {
   View,
   Text,
@@ -7,21 +7,22 @@ import {
   Alert,
   TouchableOpacity,
   ScrollView
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import api from "../../Src/Services/conexion";
-import { logoutUser } from "../../Src/Services/AuthServices";
-import { Ionicons } from "@expo/vector-icons";
+} from "react-native";  
+import AsyncStorage from "@react-native-async-storage/async-storage"; 
+import api from "../../Src/Services/conexion";  
+import { logoutUser  } from "../../Src/Services/AuthServices";  
+import { Ionicons } from "@expo/vector-icons";  
 
+// Componente principal PantallaPerfil
 export default function PantallaPerfil({ navigation }) {
-  const [usuario, setUsuario] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [usuario, setUsuario] = useState(null);  // Estado para almacenar la información del usuario
+  const [loading, setLoading] = useState(true);  // Estado para controlar el loading
 
   useEffect(() => {
-
+    // Función para cargar el perfil del usuario
     const cargarPerfil = async () => {
       try {
-        const token = await AsyncStorage.getItem("userToken");
+        const token = await AsyncStorage.getItem("userToken");  // Obtiene el token del almacenamiento
 
         if (!token) {
           console.log("No se encontró token, redirigiendo al login");
@@ -29,12 +30,13 @@ export default function PantallaPerfil({ navigation }) {
         }
 
         console.log("Intentando cargar perfil con token:", token);
-        const response = await api.get("/listarUsuarios");
+        const response = await api.get("/listarUsuarios");  
         console.log("Respuesta del perfil:", response.data);
-        setUsuario(response.data);
+        setUsuario(response.data);  // Actualiza el estado con la información del usuario
       } catch (error) {
         console.error("Error al cargar perfil:", error);
 
+        // Manejo de errores
         if (error.isAuthError || error.shouldRedirectToLogin) {
           console.log("Error de autenticación manejado por el interceptor");
           return;
@@ -49,7 +51,7 @@ export default function PantallaPerfil({ navigation }) {
               {
                 text: "OK",
                 onPress: async () => {
-                  await AsyncStorage.removeItem("userToken");
+                  await AsyncStorage.removeItem("userToken");  // Elimina el token en caso de error
                 },
               },
             ]
@@ -62,7 +64,7 @@ export default function PantallaPerfil({ navigation }) {
               {
                 text: "OK",
                 onPress: async () => {
-                  await AsyncStorage.removeItem("userToken");
+                  await AsyncStorage.removeItem("userToken");  // Elimina el token en caso de error
                 },
               },
             ]
@@ -75,20 +77,21 @@ export default function PantallaPerfil({ navigation }) {
               {
                 text: "OK",
                 onPress: async () => {
-                  await AsyncStorage.removeItem("userToken");
+                  await AsyncStorage.removeItem("userToken");  // Elimina el token en caso de error
                 },
               },
             ]
           );
         }
       } finally {
-        setLoading(false);
+        setLoading(false);  // Desactiva el loading
       }
     };
 
-    cargarPerfil();
+    cargarPerfil();  // Llama a la función para cargar el perfil
   }, []);
 
+  // Muestra un indicador de carga mientras se obtiene la información del perfil
   if (loading) {
     return (
       <View style={styles.container}>
@@ -97,6 +100,7 @@ export default function PantallaPerfil({ navigation }) {
     );
   }
 
+  // Muestra un mensaje si no se pudo cargar la información del perfil
   if (!usuario) {
     return (
       <View style={styles.container}>
@@ -107,6 +111,8 @@ export default function PantallaPerfil({ navigation }) {
       </View>
     );
   }
+
+  // Renderiza la información del perfil
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.header}>
@@ -131,6 +137,7 @@ export default function PantallaPerfil({ navigation }) {
         </View>
       </View>
 
+      {/* Botón para editar el perfil */}
       <TouchableOpacity
         onPress={() => navigation.navigate('EditarPerfil')}
         style={styles.editButton}
@@ -139,21 +146,21 @@ export default function PantallaPerfil({ navigation }) {
         <Text style={styles.editButtonText}>Editar Perfil</Text>
       </TouchableOpacity>
 
+      {/* Botón para cerrar sesión */}
       <TouchableOpacity
         style={styles.editButton}
-         onPress={async () => {
-            await logoutUser();
-        
+        onPress={async () => {
+          await logoutUser ();  // Llama al servicio de logout
         }}
       >
         <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
         <Text style={styles.editButtonText}>Cerrar Sesión</Text>
       </TouchableOpacity>
-
     </ScrollView>
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
@@ -219,7 +226,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 10, 
   },
- 
 });
-
-

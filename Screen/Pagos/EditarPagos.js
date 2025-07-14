@@ -1,144 +1,215 @@
-import React, { useState, useEffect } from "react";
-import BottonComponent from "../../components/BottonComponent";
-import { ScrollView, View, Text, TextInput, StyleSheet, Alert, KeyboardAvoidingView, Platform, } from "react-native";
+import React, { useEffect, useState } from "react";  
+import {
+    View,
+    Text,
+    TextInput,
+    Alert,
+    StyleSheet,
+    TouchableOpacity,
+    ActivityIndicator,
+} from "react-native";  
+import { Picker } from "@react-native-picker/picker";  
+import { useNavigation, useRoute } from "@react-navigation/native";  
+import { listarPasientes } from "../../Src/Services/PasientesService";  
+import { crearPagos, editarPagos } from "../../Src/Services/PagosService";  
 
+// Componente principal EditarPagosScreen
 export default function EditarPagosScreen() {
-  const [fecha, setFecha] = useState();
-  const [total, setTotal] = useState();
-  const [met_pago, setMetPago] = useState();
-  const [estado, setEstado] = useState();
-  const fechaRegex = /^\d{4}\/\d{2}\/\d{2}$/;
+    const navigation = useNavigation();  // Hook para la navegación
+    const route = useRoute();  // Hook para acceder a los parámetros de la ruta
+    const pagos = route.params?.pagos;  // Obtiene el pago a editar desde los parámetros de la ruta
 
+    // Estados para los campos del formulario
+    const [fecha, setFecha] = useState(pagos?.fecha || "");
+    const [total, setDocumento] = useState(pagos?.total?.toString() || "");
+    const [estado, setEstado] = useState(pagos?.estado?.toString() || "");
+    const [met_pago, setMetPago] = useState(pagos?.met_pago?.toString() || "");
+    const [idPasientes, setIdPasientes] = useState(pagos?.idPasientes?.toString() || "");
+    const [idCitas, setIdCitas] = useState(pagos?.idCitas?.toString() || "");
 
-  const handleSubmit = () => {
+    const [loading, setLoading] = useState(false);  // Estado para controlar el loading
+    const [pasientes, setPasientes] = useState([]);  // Estado para almacenar la lista de pacientes
 
-    if (!fechaRegex.test(fecha)) {
-      Alert.alert("Formato incorrecto", "Fecha debe tener formato YYYY/MM/DD con barras.");
-      return;
-    }
+    // Efecto para cargar la lista de pacientes
+    useEffect(() => {
+        const cargarPasientes = async () => {
+            const result = await listarPasientes(); 
+            if (result.success) {
+                setPasientes(result.data);  // Actualiza el estado con los datos de pacientes
+            } else {
+                Alert.alert(
+                    "Error",
+                    result.message || "No se pudieron cargar los pacientes"
+                );
+            }
+        };
+        cargarPasientes();  // Llama a la función para cargar pacientes
+    }, []);
 
-    if (!fecha || !total || !met_pago || !estado) {
-      Alert.alert("Error", "Por favor complete todos los campos.");
-      return;
-    }
+    const esEdicion = !!pagos;  // Determina si es una edición o una nueva creación
 
-    Alert.alert(
-      "Datos actualizados",
-      `Fecha: ${fecha}\nTotal: ${total}\nMetPago: ${met_pago}\nEstado: ${estado}`
-    );
-  };
+    // Función para manejar el guardado del pago
+    const handleGuardar = async () => {
+        // Validación de campos obligatorios
+        if (!fecha || !total || !estado || !met_pago || !idPasientes || !idCitas) {
+            Alert.alert("Error", "Por favor completa todos los campos");
+            return;
+        }
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Editar Detalles de los Pagos</Text>
+        setLoading(true);  // Activa el loading
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Fecha de Pago</Text>
+        try {
+            let result;
+            // Llama a la función de editar o crear según corresponda
+            if (esEdicion) {
+                result = await editarPagos(pagos.id, {
+                    fecha,
+                    total,
+                    estado,
+                    met_pago,
+                    idPasientes: parseInt(idPasientes),
+                    idCitas: parseInt(idCitas),
+                });
+            } else {
+                result = await crearPagos({
+                    fecha,
+                    total,
+                    estado,
+                    met_pago,
+                    idPasientes: parseInt(idPasientes),
+                    idCitas: parseInt(idCitas),
+                });
+            }
+
+            // Manejo de la respuesta
+            if (result?.success) {
+                Alert.alert(
+                    "Éxito",
+                    `Pago ${esEdicion ? "editado" : "creado"} correctamente`
+                );
+                navigation.goBack();  // Regresa a la pantalla anterior
+            } else {
+                let errorMsg = "No se pudo guardar el pago";
+                if (typeof result.message === "object") {
+                    errorMsg = Object.entries(result.message)
+                        .map(([key, val]) => `${key}: ${val.join(", ")}`)
+                        .join("\n");
+                } else if (typeof result.message === "string") {
+                    errorMsg = result.message;
+                }
+                Alert.alert("Error", errorMsg);  // Muestra el mensaje de error
+            }
+        } catch (error) {
+            Alert.alert(
+                "Error",
+                "Ocurrió un error al guardar el pago. Por favor, inténtalo de nuevo más tarde."
+            );
+        } finally {
+            setLoading(false);  // Desactiva el loading
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>
+                {esEdicion ? "Editar Pago" : "Crear Pago"}
+            </Text>
+
+            {/* Selector de pacientes */}
+            <Picker selectedValue={idPasientes} onValueChange={setIdPasientes} style={[styles.input, styles.picker]}  >
+                <Picker.Item label="Seleccione pacientes" value="" />
+                {pasientes.map(e => (
+                    <Picker.Item key={e.id} label={e.nombre} value={e.id.toString()} />
+                ))}
+            </Picker>
+
+            {/* Campos del formulario */}
             <TextInput
-              style={styles.input}
-              placeholder="Feacha de pago"
-              value={fecha}
-              onChangeText={setFecha}
-              accessibilityLabel="Fecha"
+                placeholder="Fecha"
+                value={fecha}
+                onChangeText={setFecha}
+                style={styles.input}
             />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Total a Pagar</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Total del Pago"
-              value={total}
-              onChangeText={setTotal}
-              accessibilityLabel="Total"
+                placeholder="Total"
+                value={total}
+                onChangeText={setDocumento}
+                style={styles.input}
+                keyboardType="numeric"
             />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Metodo de pago</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Metodo a pagar"
-              value={met_pago}
-              onChangeText={setMetPago}
-              accessibilityLabel="Metodo de pago"
+                placeholder="Estado"
+                value={estado}
+                onChangeText={setEstado}
+                style={styles.input}
             />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Estado de pago</Text>
             <TextInput
-              style={[styles.input, styles.multilineInput]}
-              placeholder="Estado en el que se encuenta el pago"
-              value={estado}
-              onChangeText={setEstado}
-              multiline
-              numberOfLines={4}
-              accessibilityLabel="Estado"
+                placeholder="Método de Pago"
+                value={met_pago}
+                onChangeText={setMetPago}
+                style={styles.input}
             />
-          </View>
+            <TextInput
+                placeholder="ID Citas"
+                value={idCitas}
+                onChangeText={setIdCitas}
+                style={styles.input}
+                keyboardType="numeric"
+            />
 
-          <BottonComponent title="Guardar Cambios" onPress={handleSubmit} />
+            {/* Botón para guardar el pago */}
+            <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleGuardar}
+                disabled={loading}
+            >
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.saveButtonText}>
+                        {esEdicion ? "Guardar Cambios" : "Registrar Pago"}
+                    </Text>
+                )}
+            </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+    );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#ffffff",
-  },
-  card: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    padding: 24,
-    width: "100%",
-    maxWidth: 480,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  field: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
-  input: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: "top",
-  },
+    container: {
+        flex: 1,
+        padding: 20,
+        justifyContent: "center",
+    },
+    title: {
+        fontSize: 22,
+        fontWeight: "bold",
+        marginBottom: 20,
+        textAlign: "center",
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: "#aaa",
+        padding: 10,
+        marginBottom: 15,
+        borderRadius: 5,
+    },
+    saveButton: {
+        backgroundColor: "#DDA0DD",
+        padding: 15,
+        borderRadius: 8,
+        alignItems: "center",
+        marginTop: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    saveButtonText: {
+        color: "white",
+        fontSize: 18,
+        fontWeight: "bold",
+    },
 });
-

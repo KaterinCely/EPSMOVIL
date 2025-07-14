@@ -1,14 +1,16 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView, } from "react-native"
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { crearCitas, editarCitas } from "../../Src/Services/CitasService";
 
+// Componente principal EditarCitasScreen
 export default function EditarCitasScreen() {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation();  // Hook para la navegación
+  const route = useRoute();  // Hook para acceder a los parámetros de la ruta
 
-  const cita = route.params?.cita;
+  const cita = route.params?.cita;  // Obtiene la cita desde los parámetros de la ruta
 
+  // Estados para los campos del formulario
   const [idPasientes, setIdPasientes] = useState(cita?.idPasientes?.toString() || "");
   const [idMedicos, setIdMedicos] = useState(cita?.idMedicos?.toString() || "");
   const [idConsultorios, setIdConsultorios] = useState(cita?.idConsultorios?.toString() || "");
@@ -18,19 +20,22 @@ export default function EditarCitasScreen() {
   const [motivo, setMotivo] = useState(cita?.motivo?.toString() || "");
   const [observacion, setObservacion] = useState(cita?.observacion?.toString() || "");
   const [tipo_consulta, setTipo_consulta] = useState(cita?.tipo_consulta?.toString() || "");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  // Estado para controlar el loading
 
-  const esEdicion = !!cita;
+  const esEdicion = !!cita;  // Determina si es una edición o una nueva cita
 
+  // Función para manejar el guardado de la cita
   const handleGuardar = async () => {
+    // Validación de campos obligatorios
     if (!idPasientes || !idMedicos || !idConsultorios || !fecha || !hora || !estado || !motivo || !observacion || !tipo_consulta) {
       Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
-    setLoading(true);
+    setLoading(true);  // Activa el loading
     try {
       let result;
 
+      // Llama a la función de editar o crear según corresponda
       if (esEdicion) {
         result = await editarCitas(cita.id, {
           idMedicos: parseInt(idMedicos),
@@ -47,16 +52,17 @@ export default function EditarCitasScreen() {
         result = await crearCitas({ idMedicos, idPasientes, idConsultorios, fecha, hora, estado, motivo, observacion, tipo_consulta });
       }
 
+      // Manejo de la respuesta
       if (result.success) {
         Alert.alert("Éxito", esEdicion ? "Cita actualizada" : "Cita creada");
-        navigation.goBack();
+        navigation.goBack();  // Regresa a la pantalla anterior
       } else {
         Alert.alert("Error", result.message || "Error al guardar la cita");
       }
     } catch (error) {
       Alert.alert("Error", "Error al guardar la cita");
     } finally {
-      setLoading(false);
+      setLoading(false);  // Desactiva el loading
     }
   }
 
@@ -69,16 +75,18 @@ export default function EditarCitasScreen() {
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.titulo}>Nueva Cita Médica</Text>
+        <Text style={styles.titulo}>{esEdicion ? "Editar cita" : "Crear cita"}</Text>
 
+        {/* Campos del formulario */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>ID Médico</Text>
           <TextInput
             style={styles.input}
-            placeholder="Id del médico "
+            placeholder="Id del médico"
             keyboardType="numeric"
             value={idMedicos}
             onChangeText={setIdMedicos}
+
           />
         </View>
 
@@ -118,7 +126,7 @@ export default function EditarCitasScreen() {
           <Text style={styles.label}>Hora</Text>
           <TextInput
             style={styles.input}
-            placeholder="HH:MM"
+            placeholder="HH:MM:SS"
             value={hora}
             onChangeText={setHora}
           />
@@ -128,7 +136,7 @@ export default function EditarCitasScreen() {
           <Text style={styles.label}>Estado</Text>
           <TextInput
             style={styles.input}
-            placeholder="Esatado de la cita "
+            placeholder="Estado de la cita"
             value={estado}
             onChangeText={setEstado}
           />
@@ -158,12 +166,13 @@ export default function EditarCitasScreen() {
           <Text style={styles.label}>Tipo de Consulta</Text>
           <TextInput
             style={styles.input}
-            placeholder="Tipo de consulta "
+            placeholder="Tipo de consulta"
             value={tipo_consulta}
             onChangeText={setTipo_consulta}
           />
         </View>
 
+        {/* Botón para guardar la cita */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.button}
@@ -182,6 +191,7 @@ export default function EditarCitasScreen() {
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
@@ -214,7 +224,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
-
   buttonContainer: {
     marginTop: 20,
   },

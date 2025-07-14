@@ -1,190 +1,266 @@
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
-import { ScrollView, View, Text, StyleSheet, KeyboardAvoidingView, Platform, TextInput, Alert } from "react-native";
-import BottonComponent from "../../components/BottonComponent";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { crearMedicos, editarMedicos } from "../../Src/Services/MedicosService";
 
+// Componente principal EditarMedicosScreen
 export default function EditarMedicosScreen() {
-  const [nombre, setNombre] = useState();
-  const [apellido, setApellido] = useState();
-  const [tipo_documento, setTipoDoc] = useState();
-  const [num_documento, setNumeroDoc] = useState();
-  const [reg_medicos, setRegMedico] = useState();
-  const [telefono, setTelefono] = useState();
-  const [activo, setActivo] = useState();
-  const [correo, setCorreo] = useState();
+  const navigation = useNavigation();  // Hook para la navegación
+  const route = useRoute();  // Hook para acceder a los parámetros de la ruta
 
-  const handleSubmit = () => {
+  const medicos = route.params?.medicos;  // Obtiene el médico a editar desde los parámetros de la ruta
 
-    if (!nombre || !apellido || !num_documento || !tipo_documento || !telefono || !reg_medicos || !correo || !activo) {
-      Alert.alert("Error", "Por favor complete todos los campos.");
+  // Estados para los campos del formulario
+  const [idConsultorio, setIdConsultorio] = useState(medicos?.idConsultorio?.toString() || "");
+  const [idEspecialidad, setIdEspecialidad] = useState(medicos?.idEspecialidad?.toString() || "");
+  const [nombre, setNombre] = useState(medicos?.nombre?.toString() || "");
+  const [apellido, setApellido] = useState(medicos?.apellido?.toString() || "");
+  const [num_documento, setNumDocumento] = useState(medicos?.num_documento?.toString() || "");
+  const [tipo_documento, setTipoDocumento] = useState(medicos?.tipo_documento?.toString() || "");
+  const [reg_medicos, setRegMedicos] = useState(medicos?.reg_medicos?.toString() || "");
+  const [activo, setActivo] = useState(medicos?.activo?.toString() || "");
+  const [telefono, setTelefono] = useState(medicos?.telefono?.toString() || "");
+  const [correo, setCorreo] = useState(medicos?.correo?.toString() || "");
+  const [loading, setLoading] = useState(false);  // Estado para controlar el loading
+
+  const esEdicion = !!medicos;  // Determina si es una edición o una nueva creación
+
+  // Función para manejar el guardado del médico
+  const handleGuardar = async () => {
+    // Validación de campos obligatorios
+    if (!idConsultorio || !idEspecialidad || !nombre || !apellido || !num_documento || !tipo_documento || !reg_medicos || !activo || !telefono || !correo) {
+      Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
+    setLoading(true);  // Activa el loading
+    try {
+      let result;
 
-    Alert.alert(
-      "Datos enviados",
-      `Nombre: ${nombre}\nApellido: ${apellido}\nNumDocumento:${num_documento}\nTipoDoc:${tipo_documento}\nTelefono: ${telefono}\nRegMedico: ${reg_medicos}\nEmail: ${correo}\nActivo: ${activo}`
-    );
-  };
+      // Llama a la función de editar o crear según corresponda
+      if (esEdicion) {
+        result = await editarMedicos(medicos.id, {
+          idConsultorio: parseInt(idConsultorio),
+          idEspecialidad: parseInt(idEspecialidad),
+          nombre,
+          apellido,
+          num_documento: parseInt(num_documento),
+          tipo_documento,
+          reg_medicos,
+          activo,
+          telefono,
+          correo,
+        });
+      } else {
+        result = await crearMedicos({
+          idConsultorio: parseInt(idConsultorio),
+          idEspecialidad,
+          nombre,
+          apellido,
+          num_documento,
+          tipo_documento,
+          reg_medicos,
+          telefono,
+          correo,
+          activo,
+        });
+      }
+
+      // Manejo de la respuesta
+      if (result.success) {
+        Alert.alert("Éxito", esEdicion ? "Médico actualizado" : "Médico creado");
+        navigation.goBack();  // Regresa a la pantalla anterior
+      } else {
+        Alert.alert("Error", result.message || "Error al guardar el médico");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Error al guardar el médico");
+    } finally {
+      setLoading(false);  // Desactiva el loading
+    }
+  }
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
+      style={styles.keyboardContainer}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Datos actualizados</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.titulo}>{esEdicion ? "Editar medico" : "Crear Medico"}</Text>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre"
-              value={nombre}
-              onChangeText={setNombre}
-              accessibilityLabel="Nombre"
-            />
-          </View>
+        {/* Campos del formulario */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Id Consultorio</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Id del Consultorio"
+            value={idConsultorio}
+            onChangeText={setIdConsultorio}
+            keyboardType="numeric"
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Apellido</Text>
-            <TextInput
-              style={styles.input}
-             placeholder="  Apellido"
-              value={apellido}
-              onChangeText={setApellido}
-              accessibilityLabel="Apellido"
-            />
-          </View>
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Id Especialidad</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Id de la Especialidad"
+            value={idEspecialidad}
+            onChangeText={setIdEspecialidad}
+            keyboardType="numeric"
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Tipo de Documento</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="tipo_documento"
-              value={tipo_documento}
-              onChangeText={setTipoDoc}
-              accessibilityLabel="tipo_documento"
-            />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Numero de Documento</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Numero de documento"
-              value={num_documento}
-              onChangeText={setNumeroDoc}
-              accessibilityLabel="num_documento"
-            />
-          </View>
-           <View style={styles.field}>
-            <Text style={styles.label}>Registro Medico</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Registro Medico"
-              value={reg_medicos}
-              onChangeText={setRegMedico}
-              accessibilityLabel="reg_medicos"
-            />
-          </View>
-           <View style={styles.field}>
-            <Text style={styles.label}>Numero Telefonico</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Telefono"
-              value={telefono}
-              onChangeText={setTelefono}
-              accessibilityLabel="Telefono"
-            />
-          </View>
-           <View style={styles.field}>
-            <Text style={styles.label}>Medico Activo</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Medico Activo"
-              value={activo}
-              onChangeText={setActivo}
-              accessibilityLabel="Activo"
-            />
-          </View>
-           <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Correo electronico"
-              value={correo}
-              onChangeText={setCorreo}
-              accessibilityLabel="Correp"
-            />
-          </View>
-          <BottonComponent title="Guardar Cambios" onPress={handleSubmit} />
+          />
+        </View>
 
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Nombre del Médico</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre del Médico"
+            value={nombre}
+            onChangeText={setNombre}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Apellido del Médico</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Apellido del Médico"
+            value={apellido}
+            onChangeText={setApellido}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Número de documento</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Número de documento"
+            value={num_documento}
+            onChangeText={setNumDocumento}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Tipo de documento</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Tipo de documento"
+            value={tipo_documento}
+            onChangeText={setTipoDocumento}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Registro del Médico</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Registro del Médico"
+            value={reg_medicos}
+            onChangeText={setRegMedicos}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Médico activo o inactivo</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Médico activo o inactivo"
+            value={activo}
+            onChangeText={setActivo}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Teléfono</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Teléfono del Médico"
+            value={telefono}
+            onChangeText={setTelefono}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Correo Electrónico</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Correo Electrónico del Médico"
+            value={correo}
+            onChangeText={setCorreo}
+            keyboardType="email-address"
+          />
+        </View>
+
+        {/* Botón para guardar el médico */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleGuardar}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>Guardar Médico</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
-  container: {
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#ffffff",
+    padding: 20,
+    paddingBottom: 40,
   },
-  card: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    padding: 24,
-    width: "100%",
-    maxWidth: 480,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  field: {
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  inputContainer: {
+    marginBottom: 15,
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
-  value: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: 80,
-    textAlignVertical: "top",
+    marginBottom: 5,
+    color: "#555",
   },
   input: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f8f8",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
   },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: "top",
+  buttonContainer: {
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: "#DDA0DD",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });

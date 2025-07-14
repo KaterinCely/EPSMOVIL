@@ -1,25 +1,31 @@
 import React, { useState } from 'react'; 
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';  
-import { Ionicons } from '@expo/vector-icons'; 
-
-// Componente principal EspecialidadesCard
-export default function EspecialidadesCard({ especialidades, onEdit, onDelete }) {
-    // Estado para controlar la visibilidad de los detalles de la especialidad
+import { Ionicons } from '@expo/vector-icons';  
+// Componente principal MedicoCard
+export default function MedicoCard({ medicos, onEdit, onDelete }) {
+    // Estado para mostrar/ocultar detalles del médico
     const [showDetails, setShowDetails] = useState(false);
 
     // Renderizado del componente
     return (
         <View style={style.card}>
-            {/* Contenedor para la información de la especialidad */}
+            {/* Contenedor para la información del médico */}
             <View style={style.info}>
                 {/* Botón táctil que alterna la visibilidad de los detalles */}
                 <TouchableOpacity onPress={() => setShowDetails(!showDetails)}>
-                    {/* Muestra el nombre de la especialidad */}
-                    <Text style={style.nombre}>Especialidad: {especialidades?.nombre}</Text>
+                    {/* Muestra el nombre del médico */}
+                    <Text style={style.nombre}>Médico: {medicos?.nombre}</Text>
+
                     {showDetails && (
                         <>
-                            {/* Descripción de la especialidad que se muestra si showDetails es true */}
-                            <Text style={style.detalle}>Descripción de la especialidad: {especialidades.descripcion}</Text>
+                            {/* Detalles que se muestran si showDetails es true */}
+                            <Text style={style.detalle}>Apellido: {medicos?.apellido}</Text>
+                            <Text style={style.detalle}>Número de documento: {medicos.num_documento}</Text>
+                            <Text style={style.detalle}>Tipo de documento: {medicos.tipo_documento}</Text>
+                            <Text style={style.detalle}>Registro del médico: {medicos.reg_medicos}</Text>
+                            <Text style={style.detalle}>Médico activo o inactivo: {medicos.activo}</Text>
+                            <Text style={style.detalle}>Teléfono: {medicos.telefono}</Text>
+                            <Text style={style.detalle}>Correo electrónico: {medicos.correo}</Text>
                         </>
                     )}
                 </TouchableOpacity>
@@ -41,13 +47,13 @@ export default function EspecialidadesCard({ especialidades, onEdit, onDelete })
 // Objeto de estilos utilizando StyleSheet
 const style = StyleSheet.create({
     card: {
-        flexDirection: 'row', 
-        justifyContent: 'space-between',  
+        flexDirection: 'row',  
+        justifyContent: 'space-between', 
         alignItems: 'center',  
-        backgroundColor: '#FFFFFF',  
-        padding: 16, 
-        marginVertical: 8, 
-        marginHorizontal: 16, 
+        backgroundColor: '#FFFFFF', 
+        padding: 16,  
+        marginVertical: 8,
+        marginHorizontal: 16,  
         borderRadius: 12,  
         shadowColor: '#000',  
         shadowOffset: { width: 0, height: 2 },  // Desplazamiento de sombra
@@ -59,21 +65,21 @@ const style = StyleSheet.create({
         flex: 1,  
     },
     nombre: {
-        fontSize: 18,  
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: 'bold', 
         color: '#333',  
-        marginBottom: 4, 
+        marginBottom: 4,  
     },
     detalle: {
-        fontSize: 14,
+        fontSize: 14,  
         color: '#666',  
         marginBottom: 2, 
     },
     actions: {
-        flexDirection: 'row', 
-        marginLeft: 8, 
+        flexDirection: 'row',  
+        marginLeft: 8,  
     },
     iconBtn: {
-        marginLeft: 12,  
+        marginLeft: 12, 
     },
 });

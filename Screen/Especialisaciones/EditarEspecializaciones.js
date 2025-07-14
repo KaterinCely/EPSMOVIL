@@ -1,29 +1,34 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView, } from "react-native"
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { crearEspecialidad, editarEspecialidad } from "../../Src/Services/EspecialidadesService";
 
+// Componente principal EditarEspecialidadScreen
 export default function EditarEspecialidadScreen() {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation();  // Hook para la navegación
+  const route = useRoute();  // Hook para acceder a los parámetros de la ruta
 
-  const especialidades = route.params?.especialidades;
+  const especialidades = route.params?.especialidades;  // Obtiene la especialidad desde los parámetros de la ruta
 
+  // Estados para los campos del formulario
   const [nombre, setNombre] = useState(especialidades?.nombre || "");
   const [descripcion, setDescripcion] = useState(especialidades?.descripcion?.toString() || "");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  // Estado para controlar el loading
 
-  const esEdicion = !!especialidades;
+  const esEdicion = !!especialidades;  // Determina si es una edición o una nueva creación
 
+  // Función para manejar el guardado de la especialidad
   const handleGuardar = async () => {
-    if ( !nombre || !descripcion ) {
+    // Validación de campos obligatorios
+    if (!nombre || !descripcion) {
       Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
-    setLoading(true);
+    setLoading(true);  // Activa el loading
     try {
       let result;
 
+      // Llama a la función de editar o crear según corresponda
       if (esEdicion) {
         result = await editarEspecialidad(especialidades.id, {
           nombre,
@@ -33,16 +38,17 @@ export default function EditarEspecialidadScreen() {
         result = await crearEspecialidad({ nombre, descripcion });
       }
 
+      // Manejo de la respuesta
       if (result.success) {
         Alert.alert("Éxito", esEdicion ? "Especialidad actualizada" : "Especialidad creada");
-        navigation.goBack();
+        navigation.goBack();  // Regresa a la pantalla anterior
       } else {
-        Alert.alert("Error", result.message || "Error al guardar la Especialidad");
+        Alert.alert("Error", result.message || "Error al guardar la especialidad");
       }
     } catch (error) {
-      Alert.alert("Error", "Error al guardar la Especialidad");
+      Alert.alert("Error", "Error al guardar la especialidad");
     } finally {
-      setLoading(false);
+      setLoading(false);  // Desactiva el loading
     }
   }
 
@@ -55,8 +61,9 @@ export default function EditarEspecialidadScreen() {
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.titulo}>Nuevo Especialidad </Text>
+        <Text style={styles.titulo}>{esEdicion ? "Editar especializaciones" : "Crear especializaciones"}</Text>
 
+        {/* Campos del formulario */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Nombre de la Especialidad</Text>
           <TextInput
@@ -68,16 +75,16 @@ export default function EditarEspecialidadScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Descripciocion de la Especialidad</Text>
+          <Text style={styles.label}>Descripción de la Especialidad</Text>
           <TextInput
             style={styles.input}
-            placeholder="Descripción del Consultorio"
+            placeholder="Descripción de la Especialidad"
             value={descripcion}
             onChangeText={setDescripcion}
           />
         </View>
 
-
+        {/* Botón para guardar la especialidad */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.button}
@@ -96,6 +103,7 @@ export default function EditarEspecialidadScreen() {
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
@@ -128,7 +136,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
-
   buttonContainer: {
     marginTop: 20,
   },

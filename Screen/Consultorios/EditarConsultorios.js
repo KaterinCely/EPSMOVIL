@@ -1,36 +1,41 @@
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView, } from "react-native"
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { crearConsultorios, editarConsultorios } from "../../Src/Services/ConsultorioService";
 
+// Componente principal EditarConsultorioScreen
 export default function EditarConsultorioScreen() {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation();  // Hook para la navegación
+  const route = useRoute();  // Hook para acceder a los parámetros de la ruta
 
-  const consultorio = route.params?.consultorio;
+  const consultorio = route.params?.consultorio;  // Obtiene el consultorio desde los parámetros de la ruta
 
+  // Estados para los campos del formulario
   const [numero, setNumero] = useState(consultorio?.numero || "");
   const [piso, setPiso] = useState(consultorio?.piso || "");
   const [edificio, setEdificio] = useState(consultorio?.edificio?.toString() || "");
   const [descripcion, setDescripcion] = useState(consultorio?.descripcion?.toString() || "");
   const [disponible, setDisponible] = useState(consultorio?.disponible?.toString() || "");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  // Estado para controlar el loading
 
-  const esEdicion = !!consultorio;
+  const esEdicion = !!consultorio;  // Determina si es una edición o una nueva creación
 
+  // Función para manejar el guardado del consultorio
   const handleGuardar = async () => {
-    if ( !numero || !piso || !edificio || !descripcion || !disponible) {
+    // Validación de campos obligatorios
+    if (!numero || !piso || !edificio || !descripcion || !disponible) {
       Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
-    setLoading(true);
+    setLoading(true);  // Activa el loading
     try {
       let result;
 
+      // Llama a la función de editar o crear según corresponda
       if (esEdicion) {
         result = await editarConsultorios(consultorio.id, {
-          numero:  parseInt(numero),
-          piso: parseInt(piso), 
+          numero: parseInt(numero),
+          piso: parseInt(piso),
           edificio,
           descripcion,
           disponible,
@@ -39,16 +44,17 @@ export default function EditarConsultorioScreen() {
         result = await crearConsultorios({ numero, piso, edificio, descripcion, disponible });
       }
 
+      // Manejo de la respuesta
       if (result.success) {
-        Alert.alert("Éxito", esEdicion ? "Consultorio actualizada" : "Consultorio creada");
-        navigation.goBack();
+        Alert.alert("Éxito", esEdicion ? "Consultorio actualizado" : "Consultorio creado");
+        navigation.goBack();  // Regresa a la pantalla anterior
       } else {
-        Alert.alert("Error", result.message || "Error al guardar la Consultorio");
+        Alert.alert("Error", result.message || "Error al guardar el consultorio");
       }
     } catch (error) {
-      Alert.alert("Error", "Error al guardar la Consultorio");
+      Alert.alert("Error", "Error al guardar el consultorio");
     } finally {
-      setLoading(false);
+      setLoading(false);  // Desactiva el loading
     }
   }
 
@@ -61,25 +67,30 @@ export default function EditarConsultorioScreen() {
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.titulo}>Nuevo Consultorio </Text>
+        <Text style={styles.titulo}>{esEdicion ? "Editar consultorio" : "Crear consultorio"}</Text>
 
-         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Numero de Piso del Edificio</Text>
+        {/* Campos del formulario */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Número de Piso del Edificio</Text>
           <TextInput
             style={styles.input}
             placeholder="Número de Piso"
             value={piso}
-            onChangeText={ setPiso }
+            onChangeText={setPiso}
+            keyboardType="numeric"
+
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Numero del Consultorio</Text>
+          <Text style={styles.label}>Número del Consultorio</Text>
           <TextInput
             style={styles.input}
             placeholder="Número del Consultorio"
             value={numero}
             onChangeText={setNumero}
+            keyboardType="numeric"
+
           />
         </View>
 
@@ -94,7 +105,7 @@ export default function EditarConsultorioScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Descripciocion del Consultorio</Text>
+          <Text style={styles.label}>Descripción del Consultorio</Text>
           <TextInput
             style={styles.input}
             placeholder="Descripción del Consultorio"
@@ -113,6 +124,7 @@ export default function EditarConsultorioScreen() {
           />
         </View>
 
+        {/* Botón para guardar el consultorio */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.button}
@@ -131,6 +143,7 @@ export default function EditarConsultorioScreen() {
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
@@ -163,7 +176,6 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
-
   buttonContainer: {
     marginTop: 20,
   },

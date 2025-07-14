@@ -1,179 +1,233 @@
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import React, { useState } from "react";
-import { ScrollView, View, Text, StyleSheet, KeyboardAvoidingView, Platform, TextInput, Alert } from "react-native";
-import BottonComponent from "../../components/BottonComponent";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { crearPasientes, editarPasientes } from "../../Src/Services/PasientesService";
+import { Picker } from '@react-native-picker/picker'; // Importa el Picker
 
+// Componente principal EditarPasientesScreen
 export default function EditarPasientesScreen() {
-  const [nombre, setNombre] = useState();
-  const [apellido, setApellido] = useState();
-  const [tipo_documento, setTipoDoc] = useState();
-  const [num_documento, setNumeroDoc] = useState();
-  const [genero, setGenero] = useState();
-  const [telefono, setTelefono] = useState();
-  const [correo, setCorreo] = useState();
+  const navigation = useNavigation();  // Hook para la navegación
+  const route = useRoute();  // Hook para acceder a los parámetros de la ruta
 
-  const handleSubmit = () => {
+  const pasientes = route.params?.pasientes;  // Obtiene el paciente a editar desde los parámetros de la ruta
 
-    if (!nombre || !apellido || !num_documento || !tipo_documento || !telefono || !correo || !genero) {
-      Alert.alert("Error", "Por favor complete todos los campos.");
+  // Estados para los campos del formulario
+  const [nombre, setNombre] = useState(pasientes?.nombre?.toString() || "");
+  const [apellido, setApellido] = useState(pasientes?.apellido?.toString() || "");
+  const [num_documento, setNum_documento] = useState(pasientes?.num_documento?.toString() || "");
+  const [tipo_documento, setTipo_documento] = useState(pasientes?.tipo_documento?.toString() || "");
+  const [genero, setGenero] = useState(pasientes?.genero?.toString() || "");
+  const [telefono, setTelefono] = useState(pasientes?.telefono?.toString() || "");
+  const [correo, setCorreo] = useState(pasientes?.correo?.toString() || "");
+  const [loading, setLoading] = useState(false);  // Estado para controlar el loading
+
+  const esEdicion = !!pasientes;  // Determina si es una edición o una nueva creación
+
+  // Función para manejar el guardado del paciente
+  const handleGuardar = async () => {
+    // Validación de campos obligatorios
+    if (!nombre || !apellido || !num_documento || !tipo_documento || !genero || !telefono || !correo) {
+      Alert.alert("Error", "Todos los campos son obligatorios");
       return;
     }
+    setLoading(true);  // Activa el loading
+    try {
+      let result;
 
-    Alert.alert(
-      "Datos enviados",
-      `Nombre: ${nombre}\nApellido: ${apellido}\nNumDocumento:${num_documento}\nTipoDoc:${tipo_documento}\nTelefono: ${telefono}\nEmail: ${correo}\nGenero: ${genero}`
-    );
-  };
+      // Llama a la función de editar o crear según corresponda
+      if (esEdicion) {
+        result = await editarPasientes(pasientes.id, {
+          nombre,
+          apellido,
+          num_documento: parseInt(num_documento),
+          tipo_documento,
+          genero,
+          telefono: parseInt(telefono),
+          correo
+        });
+      } else {
+        result = await crearPasientes({ nombre, apellido, num_documento, tipo_documento, genero, telefono, correo });
+      }
+
+      // Manejo de la respuesta
+      if (result.success) {
+        Alert.alert("Éxito", esEdicion ? "Paciente actualizado" : "Paciente creado");
+        navigation.goBack();  // Regresa a la pantalla anterior
+      } else {
+        Alert.alert("Error", result.message || "Error al guardar el paciente");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Error al guardar el paciente");
+    } finally {
+      setLoading(false);  // Desactiva el loading
+    }
+  }
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
+      style={styles.keyboardContainer}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Datos actualizados</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.titulo}>{esEdicion ? "Editar paciente" : "Crear paciente"}</Text>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Nombre</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre"
-              value={nombre}
-              onChangeText={setNombre}
-              accessibilityLabel="Nombre"
-            />
-          </View>
+        {/* Campos del formulario */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Nombre del paciente</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre del paciente"
+            value={nombre}
+            onChangeText={setNombre}
+          />
+        </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Apellido</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="  Apellido"
-              value={apellido}
-              onChangeText={setApellido}
-              accessibilityLabel="Apellido"
-            />
-          </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Apellido del paciente</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Apellido del paciente"
+            value={apellido}
+            onChangeText={setApellido}
+          />
+        </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Tipo de Documento</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="tipo_documento"
-              value={tipo_documento}
-              onChangeText={setTipoDoc}
-              accessibilityLabel="tipo_documento"
-            />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Numero de Documento</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Numero de documento"
-              value={num_documento}
-              onChangeText={setNumeroDoc}
-              accessibilityLabel="num_documento"
-            />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Genero</Text>
-            <TextInput
-              style={styles.input}
-              placeholder=" Genero"
-              value={genero}
-              onChangeText={setGenero}
-              accessibilityLabel="Genero"
-            />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Numero Telefonico</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Telefono"
-              value={telefono}
-              onChangeText={setTelefono}
-              accessibilityLabel="Telefono"
-            />
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Correo electronico"
-              value={correo}
-              onChangeText={setCorreo}
-              accessibilityLabel="Correp"
-            />
-          </View>
-          <BottonComponent title="Guardar Cambios" onPress={handleSubmit} />
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Número de documento</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Número de documento"
+            value={num_documento}
+            onChangeText={setNum_documento}
+            keyboardType="numeric"
+          />
+        </View>
 
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Tipo de documento</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={tipo_documento}
+              style={styles.picker}
+              onValueChange={(itemValue) => setTipo_documento(itemValue)}
+            >
+              <Picker.Item label="Seleccione un tipo de documento" value="" />
+              <Picker.Item label="Cédula" value="Cédula" />
+              <Picker.Item label="Tarjeta" value="Tarjeta" />
+            </Picker>
+          </View>
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Género</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Género"
+            value={genero}
+            onChangeText={setGenero}
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Teléfono</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Teléfono"
+            value={telefono}
+            onChangeText={setTelefono}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Correo electrónico</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Correo electrónico"
+            value={correo}
+            onChangeText={setCorreo}
+            keyboardType="email-address"
+          />
+        </View>
+
+        {/* Botón para guardar el paciente */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleGuardar}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={styles.buttonText}>Guardar paciente</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
+// Estilos del componente
 const styles = StyleSheet.create({
-  container: {
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#ffffff",
+    padding: 20,
+    paddingBottom: 40,
   },
-  card: {
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-    padding: 24,
-    width: "100%",
-    maxWidth: 480,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 24,
-    textAlign: "center",
-  },
-  field: {
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  inputContainer: {
+    marginBottom: 15,
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 8,
-  },
-  value: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: 80,
-    textAlignVertical: "top",
+    marginBottom: 5,
+    color: "#555",
   },
   input: {
-    fontSize: 18,
-    color: "#111827",
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f8f8",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
   },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: "top",
+  pickerContainer: {
+    backgroundColor: "#f8f8f8",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    overflow: 'hidden', // Asegura que el borde redondeado se aplique
+  },
+  picker: {
+    height: 50,
+    width: '100%',
+  },
+  buttonContainer: {
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: "#DDA0DD",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
